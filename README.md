@@ -501,5 +501,5 @@ DELETE http://localhost:3000/template/:id
 
 ---
 
-👤 **Autores**: Marcos Antonio , Theo Gusmão 👥 **Contato**: [maqvn@cin.ufpe.br] , [tgsb@cin.ufpe.br]
+👤 **Autores**: Marcos Antonio , Theo Gusmão 👥 **Contato**: maqvn@cin.ufpe.br tgsb@cin.ufpe.br
 
