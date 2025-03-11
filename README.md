@@ -148,8 +148,8 @@ POST http://localhost:3000/apigov
 		}
 	},
 	"schedule": {
-		"_id": "67cf84eee812a47e4f0812c8",
-		"userId": "21",
+		"_id": "id",
+		"userId": "ID usuário",
 		"posts": [],
 		"__v": 0
 	}
@@ -182,7 +182,7 @@ GET http://localhost:3000/schedule/:userId
 {
     "success": true,
     "message": "Cronograma Enviado com sucesso!",
-    "data": { "userId": "21", "posts": [] }
+    "data": { "userId": "ID usuário", "posts": [] }
 }
 ```
 
@@ -215,7 +215,8 @@ GET http://localhost:3000/schedule/:userId/posts/:postsId
       "postText": "Texto para a imagem",
       "postDate": "dd-mm-aa",
       "postTime": "HH:mm",
-      "imagePath": "arquivo JPEG ou PNG"
+      "imagePath": "arquivo JPEG ou PNG",
+      "_id" : "id"
       }
 }
 ```
@@ -246,7 +247,7 @@ POST http://localhost:3000/schedule/:userId/posts
     "postText": "Texto para a imagem",
     "postDate": "dd-mm-aa",
     "postTime": "HH:mm",
-    "imagePath": {arquivo JPEG ou PNG}
+    "imagePath": "arquivo JPEG ou PNG"
 }
 ```
 
@@ -257,7 +258,7 @@ POST http://localhost:3000/schedule/:userId/posts
     "success": true,
     "message": "Postagem criada com sucesso!",
     "data": {
-        "userId": "21",
+        "userId": "ID usuário",
         "posts": []
     }
 }
@@ -288,7 +289,7 @@ PATCH http://localhost:3000/schedule/:userId/posts/:postId
     "postText": "Texto para a imagem",
     "postDate": "dd-mm-aa",
     "postTime": "HH:mm",
-    "imagePath": {arquivo JPEG ou PNG}
+    "imagePath": "arquivo JPEG ou PNG"
 }
 ```
 
@@ -299,7 +300,7 @@ PATCH http://localhost:3000/schedule/:userId/posts/:postId
     "success": true,
     "message": "Postagem Atualizada com sucesso!",
     "data": {
-        "userId": "21",
+        "userId": "ID usuário",
         "posts": []
     }
 }
@@ -330,8 +331,8 @@ DELETE http://localhost:3000/schedule/:userId/posts/:postId
     "success": true,
     "message": "Postagem Excluída com sucesso!",
     "data": {
-        "id": "67cf84eee812a47e4f0812c8",
-        "userId": "21",
+        "id": "id",
+        "userId": "ID usuário",
         "posts": []
     }
 }
@@ -365,8 +366,8 @@ GET http://localhost:3000/template/
     "message": "Templates Enviados com sucesso!",
     "data": [
       {
-        "_id" : "67cf9c467215a8e65b9e8922",
-        "imagePath" : ""
+        "_id" : "id",
+        "imagePath" : "Caminho Imagem"
       }
     ]
 }
@@ -395,7 +396,7 @@ POST http://localhost:3000/template/
 
 ```json
 {
-    "imagePath": {arquivo JPEG ou PNG}
+    "imagePath": "arquivo JPEG ou PNG"
 }
 ```
 
@@ -407,8 +408,8 @@ POST http://localhost:3000/template/
     "message": "Template criado com sucesso!",
     "data": [
       {
-        "imagePath" : ""
-        "_id" : "67cf9c467215a8e65b9e8922",
+        "imagePath" : "Caminho Imagem"
+        "_id" : "id",
       }
     ]
 }
@@ -436,7 +437,7 @@ PATCH http://localhost:3000/template/:id
 
 ```json
 {
-    "imagePath": {arquivo JPEG ou PNG}
+    "imagePath": "arquivo JPEG ou PNG"
 }
 ```
 
@@ -448,8 +449,8 @@ PATCH http://localhost:3000/template/:id
     "message": "Template atualizado com sucesso!",
     "data": [
       {
-        "_id" : "67cf9c467215a8e65b9e8922",
-        "imagePath" : ""
+        "_id" : "id",
+        "imagePath" : "Caminho Imagem"
       }
     ]
 }
@@ -481,8 +482,8 @@ DELETE http://localhost:3000/template/:id
     "message": "Template excluído com sucesso!",
     "data": [
       {
-        "_id" : "67cf9c467215a8e65b9e8922",
-        "imagePath" : ""
+        "_id" : "id",
+        "imagePath" : "Caminho Imagem"
       }
     ]
 }
