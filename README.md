@@ -78,7 +78,7 @@ POST http://localhost:3000/generate-text
 
 ### 🌍 API da Prefeitura
 
-#### POST - Criar Usuário Gov + Cronograma
+#### POST - Criar Usuário Gov e Cronograma
 
 **Endpoint:**
 
@@ -151,6 +151,40 @@ GET http://localhost:3000/schedule/:userId
 }
 ```
 
+#### GET - Receber Postagem
+
+**Endpoint:**
+
+```
+GET http://localhost:3000/schedule/:userId/posts/:postsId
+```
+
+**Resposta de Sucesso:**
+
+```json
+{
+    "success": true,
+    "message": "Postagem Enviada com sucesso!",
+    "data": {
+      "platform": "Plataforma para a postagem",
+      "postText": "Texto para a imagem",
+      "postDate": "dd-mm-aa",
+      "postTime": "HH:mm",
+      "imagePath": {arquivo JPEG ou PNG}
+      }
+}
+```
+
+**Resposta de Erro:**
+
+```json
+{
+    "success": false,
+    "message": "Erro interno no servidor",
+    "error": "Postagem não encontrada!"
+}
+```
+
 #### POST - Criar Postagem
 
 **Endpoint:**
@@ -201,6 +235,40 @@ POST http://localhost:3000/schedule/:userId/posts
 ```
 PATCH http://localhost:3000/schedule/:userId/posts/:postId
 ```
+**Body da Requisição:**
+
+```json
+{
+    "platform": "Plataforma para a postagem",
+    "postText": "Texto para a imagem",
+    "postDate": "dd-mm-aa",
+    "postTime": "HH:mm",
+    "imagePath": {arquivo JPEG ou PNG}
+}
+```
+
+**Resposta de Sucesso:**
+
+```json
+{
+    "success": true,
+    "message": "Postagem Atualizada com sucesso!",
+    "data": {
+        "userId": "21",
+        "posts": []
+    }
+}
+```
+
+**Resposta de Erro:**
+
+```json
+{
+    "success": false,
+    "message": "Erro interno no servidor",
+    "error": "Mensagem de erro!"
+}
+```
 
 #### DELETE - Deletar Postagem
 
@@ -208,6 +276,30 @@ PATCH http://localhost:3000/schedule/:userId/posts/:postId
 
 ```
 DELETE http://localhost:3000/schedule/:userId/posts/:postId
+```
+
+**Resposta de Sucesso:**
+
+```json
+{
+    "success": true,
+    "message": "Postagem Excluída com sucesso!",
+    "data": {
+        "id": "67cf84eee812a47e4f0812c8",
+        "userId": "21",
+        "posts": []
+    }
+}
+```
+
+**Resposta de Erro:**
+
+```json
+{
+    "success": false,
+    "message": "Erro interno no servidor",
+    "error": "Mensagem de erro!"
+}
 ```
 
 ### 📝 Templates
@@ -219,6 +311,32 @@ DELETE http://localhost:3000/schedule/:userId/posts/:postId
 ```
 GET http://localhost:3000/template/
 ```
+
+**Resposta de Sucesso:**
+
+```json
+{
+    "success": true,
+    "message": "Templates Enviados com sucesso!",
+    "data": [
+      {
+        "_id" : "67cf9c467215a8e65b9e8922",
+        "imagePath" : ""
+      }
+    ]
+}
+```
+
+**Resposta de Erro:**
+
+```json
+{
+    "success": false,
+    "message": "Erro interno no servidor",
+    "error": "Mensagem de Erro!"
+}
+```
+
 
 #### POST - Criar Template
 
@@ -236,12 +354,70 @@ POST http://localhost:3000/template/
 }
 ```
 
+**Resposta de Sucesso:**
+
+```json
+{
+    "success": true,
+    "message": "Template criado com sucesso!",
+    "data": [
+      {
+        "imagePath" : ""
+        "_id" : "67cf9c467215a8e65b9e8922",
+      }
+    ]
+}
+```
+
+**Resposta de Erro:**
+
+```json
+{
+    "success": false,
+    "message": "Erro interno no servidor",
+    "error": "Mensagem de erro"
+}
+```
+
 #### PATCH - Atualizar Template
 
 **Endpoint:**
 
 ```
 PATCH http://localhost:3000/template/:id
+```
+
+**Body da Requisição:**
+
+```json
+{
+    "imagePath": {arquivo JPEG ou PNG}
+}
+```
+
+**Resposta de Sucesso:**
+
+```json
+{
+    "success": true,
+    "message": "Template atualizado com sucesso!",
+    "data": [
+      {
+        "_id" : "67cf9c467215a8e65b9e8922",
+        "imagePath" : ""
+      }
+    ]
+}
+```
+
+**Resposta de Erro:**
+
+```json
+{
+    "success": false,
+    "message": "Erro interno no servidor",
+    "error": "Mensagem de erro"
+}
 ```
 
 #### DELETE - Deletar Template
@@ -252,7 +428,32 @@ PATCH http://localhost:3000/template/:id
 DELETE http://localhost:3000/template/:id
 ```
 
+**Resposta de Sucesso:**
+
+```json
+{
+    "success": true,
+    "message": "Template excluído com sucesso!",
+    "data": [
+      {
+        "_id" : "67cf9c467215a8e65b9e8922",
+        "imagePath" : ""
+      }
+    ]
+}
+```
+
+**Resposta de Erro:**
+
+```json
+{
+    "success": false,
+    "message": "Erro interno no servidor",
+    "error": "Mensagem de erro"
+}
+```
+
 ---
 
-👤 **Autores**: Equipe de Desenvolvimento 👥 **Contato**: [Seu Email ou Contato]
+👤 **Autores**: Marcos Antonio , Theo Gusmão 👥 **Contato**: [maqvn@cin.ufpe.br] , [tgsb@cin.ufpe.br]
 
