@@ -1,47 +1,45 @@
 import mongoose from "mongoose";
 
 const templateSchema = new mongoose.Schema({
-    imagePath: {
-        type: String,
-        required: false,
-    }
+  imagePath: {
+    type: String,
+    required: false,
+  },
 });
 
-const scheduleSchema = new mongoose.Schema ({
-    
-    userId: {
-        type: String, 
-        required: true
-    },
+const scheduleSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+  },
 
-    posts: [
-        {
-        platform: {
-            type: String,
-            required: true,
-        },
-        postText: {
-            type: String,
-            required: false,
-        },
-        postDate: {
-            type: Date,
-            required: true,
-        },
-        postTime: {
-            type: String,
-            required: true,
-        },
-        imagePath: {
-            type: String, 
-            required: false
-        }
-      }
-    ]
-  }
-);
+  posts: [
+    {
+      platform: {
+        type: String,
+        required: true,
+      },
+      postText: {
+        type: String,
+        required: false,
+      },
+      postDate: {
+        type: Date,
+        required: true,
+      },
+      postTime: {
+        type: String,
+        required: true,
+      },
+      imagePath: {
+        type: String,
+        required: false,
+      },
+    },
+  ],
+});
 
 const ScheduleModel = mongoose.model("Schedule", scheduleSchema);
 const TemplateModel = mongoose.model("Template", templateSchema);
 
-export {ScheduleModel, TemplateModel};
+export { ScheduleModel, TemplateModel };

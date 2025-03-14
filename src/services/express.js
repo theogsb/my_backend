@@ -1,11 +1,19 @@
 import express from "express";
+import templateRoutes from "../routes/templateRoutes.js";
+import textGeneratorRoutes from "../routes/textGeneratorRoutes.js";
+import postsRoutes from '../routes/postsRoutes.js';
 
 const app = express();
-app.use(express.json());
-
-const dominio = "http://localhost:";
 const port = 3000;
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.listen(port, () => console.log(`Rodando com express na porta ${port}!`));
+app.use(templateRoutes);
+app.use(textGeneratorRoutes);
+app.use(postsRoutes);
 
-export default app;
+const server = app.listen(port, () => {
+  console.log(`Rodando com express na porta ${port}!`);
+});
+
+export { app, server };
