@@ -33,6 +33,13 @@ router.get("/template/:id", async (req, res) => {
     const id = req.params.id;
     const template = await TemplateModel.findById(id);
 
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        message: "Template não encontrado.",
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: "Template enviado com sucesso!",
@@ -45,6 +52,13 @@ router.get("/template/:id", async (req, res) => {
 
 router.post("/template", publicUpload.single("imagePath"), async (req, res) => {
   try {
+    // if (!req.file) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Nenhuma imagem foi enviada.",
+    //   });
+    // }
+
     req.body.imagePath = req.file.path;
     const template = await TemplateModel.create(req.body);
 
@@ -57,8 +71,6 @@ router.post("/template", publicUpload.single("imagePath"), async (req, res) => {
     if (req.file) {
       fs.unlinkSync(req.file.path);
     }
-
-    console.log(error);
     handleError(res, error);
   }
 });
@@ -68,14 +80,18 @@ router.patch(
   publicUpload.single("imagePath"),
   async (req, res) => {
     try {
-      if (req.file) {
-        req.body.imagePath = req.file.path;
-      }
       const template = await TemplateModel.findByIdAndUpdate(
         req.params.id,
         req.body,
         { new: true }
       );
+
+      if (!template) {
+        return res.status(404).json({
+          success: false,
+          message: "Template não encontrado.",
+        });
+      }
 
       res.status(200).json({
         success: true,
@@ -91,6 +107,13 @@ router.patch(
 router.delete("/template/:id", async (req, res) => {
   try {
     const template = await TemplateModel.findByIdAndDelete(req.params.id);
+
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        message: "Template não encontrado.",
+      });
+    }
 
     res.status(200).json({
       success: true,

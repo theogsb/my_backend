@@ -12,6 +12,13 @@ router.post("/generate-text", async (req, res) => {
   try {
     const prompt = req.body.prompt;
 
+    if (!prompt) {
+      return res.status(400).json({
+        success: false,
+        message: "Campo 'prompt' é obrigatório",
+      });
+    }
+
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {

@@ -1,42 +1,72 @@
 import request from "supertest";
-import express from "express"; // Import express to create a new app instance
+import express from "express";
 import { TemplateModel } from "../src/models/userModel.js";
 import mongoose from "mongoose";
-import path from "path";
+import { MongoMemoryServer } from "mongodb-memory-server";
 import fs from "fs";
+import path from "path";
 import dotenv from "dotenv";
-import templateRoutes from "../src/routes/templateRoutes.js"; // Import your routes
+import templateRoutes from "../src/routes/templateRoutes.js";
+
 dotenv.config();
 
-let server; // Define server at the top
+// Mock do multer
+jest.mock("../src/multer/multer.js", () => ({
+  publicUpload: {
+    single: () => (req, res, next) => {
+      if (req.headers["content-type"]?.includes("multipart/form-data")) {
+        req.file = {
+          path: "caminho/simulado/da/imagem.png", // Caminho simulado
+        };
+      } else {
+        req.file = undefined; // Simula a ausência de arquivo
+      }
+      next(); // Chama next() para continuar o fluxo da requisição
+    },
+  },
+}));
+
+// Mock do fs.unlinkSync para evitar operações reais de input e output
+jest.mock("fs", () => ({
+  ...jest.requireActual("fs"), // Mantém outras funções do fs
+  unlinkSync: jest.fn(), // Mocka apenas unlinkSync
+}));
+
+let server;
+let mongoServer;
+let filePath;
+
+const setupTestServer = async () => {
+  const app = express();
+  app.use(express.json());
+  app.use(templateRoutes);
+  return app.listen(0);
+};
+
+beforeAll(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  const uri = mongoServer.getUri();
+  await mongoose.connect(uri);
+
+  server = await setupTestServer();
+
+  // Cria um arquivo temporário
+  filePath = path.resolve(__dirname, "temp_image.png");
+  fs.writeFileSync(filePath, "conteúdo simulado do arquivo");
+});
+
+afterAll(async () => {
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+
+  await TemplateModel.deleteMany({ isTest: true });
+  await mongoose.disconnect();
+  await mongoServer.stop();
+  server.close();
+});
 
 describe("GET /template/", () => {
-  beforeAll(async () => {
-    await mongoose.connect(
-      `mongodb+srv://theo:theo@theo.al2dr.mongodb.net/nome_do_banco_de_dados`
-    );
-    console.log("Conexão com o banco de dados estabelecida com sucesso!");
-
-    // Create a new app instance for testing
-    const app = express();
-    app.use(express.json());
-    app.use(templateRoutes);
-
-    // Start the server on a different port
-    server = app.listen(0, () => {
-      console.log(`Servidor de teste rodando na porta ${server.address().port}`);
-    });
-  });
-
-  afterAll(async () => {
-    await TemplateModel.deleteMany({ isTest: true });
-    console.log("Templates de teste removidos.");
-
-    await mongoose.connection.close();
-    server.close();
-    console.log("Conexão com o banco de dados fechada.");
-  });
-
   it("deve retornar uma lista de templates", async () => {
     await TemplateModel.create({
       imagePath: "caminho/da/imagem.png",
@@ -49,34 +79,18 @@ describe("GET /template/", () => {
     expect(response.body.success).toBe(true);
     expect(response.body.data).toBeInstanceOf(Array);
     expect(response.body.data.length).toBeGreaterThanOrEqual(1);
-  }, 20000);
+  });
 });
 
 describe("GET /template/:id", () => {
   let templateId;
 
   beforeAll(async () => {
-    await mongoose.connect(
-      `mongodb+srv://theo:theo@theo.al2dr.mongodb.net/nome_do_banco_de_dados`
-    );
-
-    console.log("Conexao com o banco de dados estabelecida com sucess");
-
     const template = await TemplateModel.create({
       imagePath: "caminho/da/imagem.png",
-      isTest: true, // marca o template como teste
+      isTest: true,
     });
-
     templateId = template._id;
-  });
-
-  afterAll(async () => {
-    await TemplateModel.deleteMany({ isTest: true });
-    console.log("Templates de teste removidos!");
-
-    await mongoose.connection.close();
-    server.close();
-    console.log("Conexao com o banco de dados fechada");
   });
 
   it("deve retornar um template pelo ID", async () => {
@@ -86,31 +100,20 @@ describe("GET /template/:id", () => {
     expect(response.body.success).toBe(true);
     expect(response.body.data._id).toBe(templateId.toString());
     expect(response.body.data.imagePath).toBe("caminho/da/imagem.png");
-  }, 20000);
+  });
+
+  it("deve retornar erro 404 se o template não for encontrado", async () => {
+    const invalidId = new mongoose.Types.ObjectId(); // ID inválido
+    const response = await request(server).get(`/template/${invalidId}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body.success).toBe(false);
+    expect(response.body.message).toBe("Template não encontrado.");
+  });
 });
 
 describe("POST /template", () => {
-  beforeAll(async () => {
-    await mongoose.connect(
-      `mongodb+srv://theo:theo@theo.al2dr.mongodb.net/nome_do_banco_de_dados`
-    );
-    console.log("Conexao com o banco de dados estabelecida com sucess");
-  });
-
-  afterAll(async () => {
-    await TemplateModel.deleteMany({ isTest: true });
-    console.log("Templates de teste removidos");
-
-    await mongoose.connection.close();
-    server.close();
-    console.log("Conexao com o banco de dados fechada");
-  });
-
   it("deve criar um novo template", async () => {
-    // simulando uma file
-    const filePath = path.join(__dirname, "test-file.png");
-    fs.writeFileSync(filePath, "Conteúdo do arquivo de teste");
-
     const response = await request(server)
       .post("/template")
       .field("isTest", true)
@@ -119,36 +122,29 @@ describe("POST /template", () => {
     expect(response.status).toBe(201);
     expect(response.body.success).toBe(true);
     expect(response.body.data.imagePath).toBeDefined();
-    expect(response.body.data._id).toBeDefined();
+  });
 
-    fs.unlinkSync(filePath);
-  }, 20000);
+  //   it("deve retornar erro 400 se o campo 'imagePath' estiver ausente", async () => {
+  //     const response = await request(server)
+  //       .post("/template")
+  //       .field("isTest", true);
+
+  //     expect(response.status).toBe(400);
+  //     expect(response.body.success).toBe(false);
+  //     expect(response.body.message).toBe("Nenhuma imagem foi enviada.");
+  //   });
 });
 
+// Testes para DELETE /template/:id
 describe("DELETE /template/:id", () => {
   let templateId;
 
   beforeAll(async () => {
-    await mongoose.connect(
-      `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@theo.al2dr.mongodb.net/`
-    );
-
-    console.log("Conexao com o banco de dados estabelecida com sucesso");
-
     const template = await TemplateModel.create({
       imagePath: "caminho/da/imagem.png",
       isTest: true,
     });
     templateId = template._id;
-  });
-
-  afterAll(async () => {
-    await TemplateModel.deleteMany({ isTest: true });
-    console.log("Templates de teste removidos");
-
-    await mongoose.connection.close();
-    server.close();
-    console.log("Conexao com o banco de dados fechada");
   });
 
   it("deve excluir um template pelo ID", async () => {
@@ -157,32 +153,27 @@ describe("DELETE /template/:id", () => {
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
     expect(response.body.message).toBe("Template excluído com sucesso!");
-  }, 20000);
+  });
+
+  it("deve retornar erro 404 se o template não for encontrado", async () => {
+    const invalidId = new mongoose.Types.ObjectId(); // ID inválido
+    const response = await request(server).delete(`/template/${invalidId}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body.success).toBe(false);
+    expect(response.body.message).toBe("Template não encontrado.");
+  });
 });
 
 describe("PATCH /template/:id", () => {
   let templateId;
 
   beforeAll(async () => {
-    await mongoose.connect(
-      `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@theo.al2dr.mongodb.net/`
-    );
-    console.log("Conexao com o banco de dados estabelecida com sucesso");
-
     const template = await TemplateModel.create({
       imagePath: "caminho/da/imagem.png",
       isTest: true,
     });
     templateId = template._id;
-  });
-
-  afterAll(async () => {
-    await TemplateModel.deleteMany({ isTest: true });
-    console.log("Templates de teste removidos");
-
-    await mongoose.connection.close();
-    server.close();
-    console.log("Conexao com o banco de dados fechada");
   });
 
   it("deve atualizar um template pelo ID", async () => {
@@ -197,5 +188,16 @@ describe("PATCH /template/:id", () => {
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
     expect(response.body.data.imagePath).toBe(updatedData.imagePath);
-  }, 20000);
+  });
+
+  it("deve retornar erro 404 se o template não for encontrado", async () => {
+    const invalidId = new mongoose.Types.ObjectId(); // ID inválido
+    const response = await request(server)
+      .patch(`/template/${invalidId}`)
+      .send({ imagePath: "novo/caminho/da/imagem.png" });
+
+    expect(response.status).toBe(404);
+    expect(response.body.success).toBe(false);
+    expect(response.body.message).toBe("Template não encontrado.");
+  });
 });

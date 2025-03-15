@@ -1,7 +1,10 @@
-import { app } from "../services/express.js";
+import express from "express";
 import { ScheduleModel } from "../models/userModel.js";
+import fetch from "node-fetch";
 
-app.post("/apigov", async (req, res) => {
+const router = express.Router();
+
+router.post("/apigov", async (req, res) => {
   try {
     const response = await fetch(
       "https://bora-impactar-prd.setd.rdmapps.com.br/api/login.json",
@@ -46,3 +49,5 @@ app.post("/apigov", async (req, res) => {
     });
   }
 });
+
+export default router;

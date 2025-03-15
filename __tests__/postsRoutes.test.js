@@ -6,9 +6,37 @@ import postsRoutes from "../src/routes/postsRoutes.js";
 import { ScheduleModel } from "../src/models/userModel.js";
 import fs from "fs";
 import path from "path";
+import { MongoMemoryServer } from "mongodb-memory-server";
 
 dotenv.config();
 
+// Funcoes utilitárias
+let mongoServer;
+
+const setupTestServer = async () => {
+  const app = express();
+  app.use(express.json());
+  app.use(postsRoutes);
+  return app.listen(0); // Porta dinamica
+};
+
+const connectToDatabase = async () => {
+  mongoServer = await MongoMemoryServer.create();
+  const uri = mongoServer.getUri();
+  await mongoose.connect(uri);
+};
+
+const cleanupDatabase = async () => {
+  await ScheduleModel.deleteMany({});
+};
+
+const closeServerAndDatabase = async (server) => {
+  await mongoose.disconnect();
+  await mongoServer.stop();
+  server.close();
+};
+
+// Testes
 describe("Testes das rotas de posts", () => {
   let server;
   let userId;
@@ -16,33 +44,25 @@ describe("Testes das rotas de posts", () => {
   let testFilePath;
 
   beforeAll(async () => {
-    await mongoose.connect(
-      `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@theo.al2dr.mongodb.net/`
-    );
+    await connectToDatabase();
+    server = await setupTestServer();
 
     // Criar um cronograma para o usuário de teste
     const schedule = await ScheduleModel.create({
       userId: "testUserId",
       posts: [],
     });
-
     userId = schedule.userId;
 
-    // Criar uma pasta temporaria para uploads
+    // Criar uma pasta temporária para uploads
     const testUploadsDir = path.resolve(__dirname, "temp_uploads");
     if (!fs.existsSync(testUploadsDir)) {
       fs.mkdirSync(testUploadsDir, { recursive: true });
     }
 
-    // Criar um arquivo temporario para o teste
+    // Criar um arquivo temporário para o teste
     testFilePath = path.resolve(testUploadsDir, "test-file.png");
     fs.writeFileSync(testFilePath, "Conteudo do arquivo de teste");
-
-    // Iniciar o servidor de teste
-    const app = express();
-    app.use(express.json());
-    app.use(postsRoutes);
-    server = app.listen(0); // Porta dinamica
 
     // Criar uma postagem para o teste
     const createResponse = await request(server)
@@ -53,26 +73,22 @@ describe("Testes das rotas de posts", () => {
       .field("postTime", "10:00")
       .attach("imagePath", testFilePath);
 
-    // Armazenar o ID da postagem criada
     postId = createResponse.body.data.posts[0]._id;
   });
 
   afterAll(async () => {
-    await ScheduleModel.deleteMany({ userId: "testUserId" });
-
+    // Limpar arquivos temporários
     const testUploadsDir = path.resolve(__dirname, "temp_uploads");
     if (fs.existsSync(testUploadsDir)) {
       fs.readdirSync(testUploadsDir).forEach((file) => {
         const filePath = path.join(testUploadsDir, file);
         fs.unlinkSync(filePath);
       });
-
       fs.rmdirSync(testUploadsDir);
     }
 
-    await mongoose.connection.close();
-
-    server.close();
+    await cleanupDatabase();
+    await closeServerAndDatabase(server);
   });
 
   describe("POST /schedule/:userId/posts", () => {
@@ -83,14 +99,13 @@ describe("Testes das rotas de posts", () => {
         .field("postText", "Test post text")
         .field("postDate", "2023-10-01")
         .field("postTime", "10:00")
-        .attach("imagePath", testFilePath); // Simulação com test file
+        .attach("imagePath", testFilePath);
 
       expect(response.status).toBe(201);
       expect(response.body.success).toBe(true);
       expect(response.body.message).toBe("Postagem criada com sucesso!");
       expect(response.body.data).toBeDefined();
-
-      postId = response.body.data.posts[0]._id;
+      expect(response.body.data.posts[0]._id).toBeDefined();
     });
 
     it("deve retornar erro ao criar postagem sem dados obrigatórios", async () => {
@@ -146,12 +161,12 @@ describe("Testes das rotas de posts", () => {
       expect(response.body.message).toBe("Postagem atualizada com sucesso!");
       expect(response.body.data.posts[0].platform).toBe(updatedData.platform);
       expect(response.body.data.posts[0].postText).toBe(updatedData.postText);
-      expect(
-        new Date(response.body.data.posts[0].postDate)
-          .toISOString()
-          .split("T")[0] // Isso é para regulamentar o formato date
-      ).toBe(updatedData.postDate);
 
+      const receivedDate = new Date(response.body.data.posts[0].postDate)
+        .toISOString()
+        .split("T")[0];
+
+      expect(receivedDate).toBe(updatedData.postDate);
       expect(response.body.data.posts[0].postTime).toBe(updatedData.postTime);
     });
 
@@ -189,32 +204,41 @@ describe("Testes das rotas de posts", () => {
     });
   });
 
-  //   describe("DELETE /schedule/:userId/posts/:postId", () => {
-  //     it("deve excluir uma postagem existente", async () => {
-  //       const deleteResponse = await request(server).delete(
-  //         `/schedule/${userId}/posts/${postId}`
-  //       );
+  describe("DELETE /schedule/:userId/posts/:postId", () => {
+    it("deve excluir uma postagem existente", async () => {
+      const response = await request(server).delete(
+        `/schedule/${userId}/posts/${postId}`
+      );
 
-  //       expect(deleteResponse.status).toBe(200);
-  //       expect(deleteResponse.body.success).toBe(true);
-  //       expect(deleteResponse.body.message).toBe(
-  //         "Postagem excluída com sucesso!"
-  //       );
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe("Postagem excluída com sucesso!");
+      expect(response.body.data).toBeDefined();
 
-  //       const updatedSchedule = await ScheduleModel.findOne({ userId });
-  //       console.log("Cronograma após exclusão:", updatedSchedule);
+      // Verificar se a postagem foi realmente removida
+      const schedule = await ScheduleModel.findOne({ userId });
+      const post = schedule.posts.id(postId);
+      expect(post).toBeNull();
+    });
 
-  //       expect(updatedSchedule.posts.length).toBe(0);
-  //     });
+    it("deve retornar erro ao tentar excluir uma postagem inexistente", async () => {
+      const response = await request(server).delete(
+        `/schedule/${userId}/posts/invalidPostId`
+      );
 
-  //     it("deve retornar erro ao excluir uma postagem inexistente", async () => {
-  //       const response = await request(server).delete(
-  //         `/schedule/${userId}/posts/invalidPostId`
-  //       );
+      expect(response.status).toBe(404);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBe("Postagem não encontrada!");
+    });
 
-  //       expect(response.status).toBe(404);
-  //       expect(response.body.success).toBe(false);
-  //       expect(response.body.message).toBe("Postagem não encontrada!");
-  //     });
-  //   });
+    it("deve retornar erro ao tentar excluir uma postagem de um usuário inexistente", async () => {
+      const response = await request(server).delete(
+        `/schedule/invalidUserId/posts/${postId}`
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBe("Cronograma não encontrado");
+    });
+  });
 });

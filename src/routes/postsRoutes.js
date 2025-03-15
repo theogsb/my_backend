@@ -214,68 +214,12 @@ router.patch(
   }
 );
 
-// // Rota para excluir uma postagem
-// router.delete("/schedule/:userId/posts/:postId/", async (req, res) => {
-//   try {
-//     const { userId, postId } = req.params;
-//     const schedule = await ScheduleModel.findOne({ userId });
-
-//     if (!schedule) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Cronograma não encontrado",
-//       });
-//     }
-
-//     const postToBeDeleted = schedule.posts.id(postId);
-
-//     if (!postToBeDeleted) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Postagem não encontrada!",
-//       });
-//     }
-
-//     console.log("Caminho da imagem", postToBeDeleted.imagePath);
-
-//     if (postToBeDeleted.imagePath) {
-//       const filePath = postToBeDeleted.imagePath;
-
-//       if (fs.existsSync(filePath)) {
-//         fs.unlinkSync(filePath);
-//       } else {
-//         console.log("Arquivo de imagem não encontrado:", filePath);
-//       }
-//     }
-
-//     // const updatedSchedule = await ScheduleModel.findOneAndUpdate(
-//     //   { userId },
-//     //   { $pull: { posts: { _id: postId } } },
-//     //   { new: true }
-//     // );
-
-//     schedule.posts.pull(postId);
-//     await schedule.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Postagem excluída com sucesso!",
-//       data: schedule,
-//     });
-//   } catch (error) {
-//     console.error("err:", error);
-//     handleError(res, error);
-//   }
-// });
-
 router.delete("/schedule/:userId/posts/:postId/", async (req, res) => {
   try {
     const { userId, postId } = req.params;
-    console.log(`deletando post ${postId}`);
 
     // Valida o postId
     if (!mongoose.Types.ObjectId.isValid(postId)) {
-      console.log("PostId inválido:", postId);
       return res.status(404).json({
         success: false,
         message: "Postagem não encontrada!",
@@ -289,7 +233,6 @@ router.delete("/schedule/:userId/posts/:postId/", async (req, res) => {
     const schedule = await ScheduleModel.findOne({ userId });
 
     if (!schedule) {
-      console.log("Cronograma não encontrado");
       return res.status(404).json({
         success: false,
         message: "Cronograma não encontrado",
@@ -300,22 +243,17 @@ router.delete("/schedule/:userId/posts/:postId/", async (req, res) => {
     const postToBeDeleted = schedule.posts.id(postObjectId);
 
     if (!postToBeDeleted) {
-      console.log("Postagem não encontrada");
       return res.status(404).json({
         success: false,
         message: "Postagem não encontrada!",
       });
     }
 
-    console.log("Caminho da imagem", postToBeDeleted.imagePath);
-
     // Remove o arquivo de imagem associado à postagem
     if (postToBeDeleted.imagePath) {
       const filePath = postToBeDeleted.imagePath;
-      console.log("Caminho da imagem", filePath);
 
       if (fs.existsSync(filePath)) {
-        console.log("Deletando a imagem");
         fs.unlinkSync(filePath);
       } else {
         console.log("Arquivo de imagem não encontrado:", filePath);
@@ -326,16 +264,12 @@ router.delete("/schedule/:userId/posts/:postId/", async (req, res) => {
     schedule.posts.pull(postObjectId); // Remove o post do array
     await schedule.save(); // Salva o documento atualizado
 
-    console.log("Postagem removida com sucesso");
-    console.log("Cronograma atualizado:", schedule);
-
     res.status(200).json({
       success: true,
       message: "Postagem excluída com sucesso!",
       data: schedule, // Retorna o documento atualizado
     });
   } catch (error) {
-    console.error("err:", error);
     handleError(res, error);
   }
 });
