@@ -1,10 +1,10 @@
-import { Router } from "express";
+import express from "express";
 import fs from "fs";
 import { ScheduleModel } from "../models/userModel.js";
 import { usersUpload } from "../multer/multer.js";
 import mongoose from "mongoose";
 
-const router = Router();
+const router = express.Router();
 
 const handleError = (res, error) => {
   res.status(500).json({

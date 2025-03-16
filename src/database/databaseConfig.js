@@ -2,9 +2,7 @@ import mongoose from "mongoose";
 
 const connectToDatabase = async () => {
   try {
-    await mongoose.connect(
-      `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@theo.al2dr.mongodb.net/`
-    );
+    await mongoose.connect(process.env.MONGODB_URL);
     console.log("Conexão com o banco de dados efetuada com sucesso!");
   } catch (error) {
     console.log(
