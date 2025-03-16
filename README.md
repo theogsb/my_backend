@@ -32,8 +32,7 @@ Caso a pasta `uploads` não exista, crie a seguinte estrutura de diretórios:
 
 ## 🔒 Autorizações Necessárias
 
-- MongoDB Login
-- MongoDB Senha
+- MongoDB Url
 - Gemini API KEY
 
 ## 🛠️ Métodos da API
@@ -213,7 +212,7 @@ GET http://localhost:3000/schedule/:userId/posts/:postsId
     "data": {
       "platform": "Plataforma para a postagem",
       "postText": "Texto para a imagem",
-      "postDate": "dd-mm-aa",
+      "postDate": "mm-dd-aa",
       "postTime": "HH:mm",
       "imagePath": "arquivo JPEG ou PNG",
       "_id" : "id"
