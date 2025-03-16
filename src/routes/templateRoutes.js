@@ -52,12 +52,12 @@ router.get("/template/:id", async (req, res) => {
 
 router.post("/template", publicUpload.single("imagePath"), async (req, res) => {
   try {
-    // if (!req.file) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Nenhuma imagem foi enviada.",
-    //   });
-    // }
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Nenhuma imagem foi enviada.",
+      });
+    }
 
     req.body.imagePath = req.file.path;
     const template = await TemplateModel.create(req.body);
@@ -75,9 +75,7 @@ router.post("/template", publicUpload.single("imagePath"), async (req, res) => {
   }
 });
 
-router.patch(
-  "/template/:id",
-  publicUpload.single("imagePath"),
+router.patch("/template/:id", publicUpload.single("imagePath"),
   async (req, res) => {
     try {
       const template = await TemplateModel.findByIdAndUpdate(
