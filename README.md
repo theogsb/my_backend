@@ -2,38 +2,43 @@
 
 ## 📄 Informações Iniciais
 
-Este documento explica o funcionamento do backend, como realizar requisições e o padrão de resposta de cada uma delas.
+Este documento explica o funcionamento geral do backend do projeto, o passo a passo para rodar o sistema, como realizar requisições e o padrão de resposta de cada uma delas.
 
-## ⚠️ Instruções e Limites de Uso
+## ⚠️ Limites de Uso
 
 Por estarmos em processo de desenvolvimento, o servidor roda localmente. Portanto, as requisições funcionarão apenas se o backend estiver rodando na mesma máquina que o frontend.
 
-## 🛠️ Build
+## 🛠️ Requisitos Básicos
 
-Para utilizar o código disponível no GitHub e rodar o servidor, é necessário criar contas no MongoDB e na Gemini API.
+- Docker Desktop
+- Conta Dockerhub
+- Conta MongoDB
+- Conta Gemini
 
-### Configuração do Banco de Dados MongoDB
+## 🛠️ Configurações
 
-No arquivo de conexão com o banco de dados, insira seu login e senha nos locais indicados para conectar ao banco de dados.
+Clonar este repositório
+```
+git clone https://github.com/theogsb/backend_visibilidade.git
+```
 
-### Configuração da Gemini API
-
-Crie uma conta no site [Google AI](https://ai.google.dev/) e insira sua API KEY no arquivo `./src/routes/textGeneratorRoutes.js`.
-
-### Estrutura de Pastas Necessária
-
-Caso a pasta `uploads` não exista, crie a seguinte estrutura de diretórios:
+Renomeie o arquivo ".env.example" para ".env" e preencha as variáveis de ambiente presentes nele
 
 ```
-/uploads
-  /publicTemplates
-  /usersTemplates
+cp .env.example .env 
+```
+
+No Docker Desktop, abra o terminal, vá até o repositório local, então Rode o Docker Compose
+
+```
+docker compose up
 ```
 
 ## 🔒 Autorizações Necessárias
 
 - MongoDB Url
 - Gemini API KEY
+
 
 ## 🛠️ Métodos da API
 

@@ -1,6 +1,6 @@
 services:
   backend:
-    build: .
+    image: maqvn/visibilidade_backend:1.0
     ports:
       - '3000:3000'
     env_file:
