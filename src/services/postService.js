@@ -56,7 +56,6 @@ export class PostService {
       }
     }
 
-    // Atualiza apenas os campos fornecidos
     Object.keys(updateData).forEach(key => {
       postToUpdate[key] = updateData[key] || postToUpdate[key];
     });

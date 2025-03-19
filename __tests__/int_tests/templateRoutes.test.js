@@ -127,7 +127,7 @@ describe("POST /template", () => {
   it("deve retornar erro quando nenhuma imagem é enviada", async () => {
     const response = await request(server)
       .post("/template")
-      .send({});  // Enviando requisição sem imagem
+      .send({});
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({

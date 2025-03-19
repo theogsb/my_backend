@@ -80,7 +80,6 @@ export class PostController {
       const updateData = req.body;
       const file = req.file;
 
-      // Atualiza apenas os campos fornecidos
       const schedule = await this.service.updatePost(userId, postId, { ...updateData, imagePath: file?.path });
 
       return res.status(200).json({

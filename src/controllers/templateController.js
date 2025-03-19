@@ -114,7 +114,6 @@ export class TemplateController {
         });
       }
 
-      // Remove o arquivo de imagem
       if (template.imagePath && fs.existsSync(template.imagePath)) {
         fs.unlinkSync(template.imagePath);
       }

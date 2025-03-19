@@ -88,7 +88,6 @@ export class TemplateService {
         throw new Error("Template não encontrado!");
       }
 
-      // Deleta a imagem se existir
       if (template.imagePath) {
         try {
           if (fs.existsSync(template.imagePath)) {
