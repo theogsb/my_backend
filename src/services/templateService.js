@@ -57,7 +57,7 @@ export class TemplateService {
     try {
       const template = await TemplateModel.findById(templateId);
       if (!template) {
-        throw new Error('Template não encontrado!');
+        throw new Error('Template não encontrado.');
       }
 
       if (template.imagePath) {
@@ -73,7 +73,7 @@ export class TemplateService {
 
       return template;
     } catch (error) {
-      if (error.message === "Template não encontrado!") {
+      if (error.message === "Template não encontrado.") {
         throw error;
       }
       throw new Error("Erro ao atualizar template");

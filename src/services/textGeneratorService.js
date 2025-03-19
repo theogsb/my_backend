@@ -8,7 +8,7 @@ const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-
 export class TextGeneratorService {
   async generateText(prompt) {
     if (!prompt) {
-      throw new Error("O campo 'prompt' é obrigatório");
+      throw new Error("Campo 'prompt' é obrigatório");
     }
 
     const response = await fetch(API_URL, {
