@@ -1,35 +1,37 @@
 import request from "supertest";
 import express from "express";
-import { TemplateModel } from "../src/models/userModel.js";
+import { TemplateModel } from "../../src/models/userModel.js";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryServer } from "mongodb-memory-server-core";
 import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
-import templateRoutes from "../src/routes/templateRoutes.js";
+import templateRoutes from "../../src/routes/templateRoutes.js";
 
-dotenv.config();
-
-// Mock do multer
-jest.mock("../src/multer/multer.js", () => ({
+jest.mock("../../src/multer/multer.js", () => ({
   publicUpload: {
     single: () => (req, res, next) => {
       if (req.headers["content-type"]?.includes("multipart/form-data")) {
         req.file = {
-          path: "caminho/simulado/da/imagem.png", // Caminho simulado
+          fieldname: "imagePath",
+          originalname: "test-image.png",
+          encoding: "7bit",
+          mimetype: "image/png",
+          destination: "./public/uploads/",
+          filename: "test-image.png",
+          path: "caminho/simulado/da/imagem.png",
+          size: 1234
         };
       } else {
-        req.file = undefined; // Simula a ausência de arquivo
+        req.file = undefined;
       }
-      next(); // Chama next() para continuar o fluxo da requisição
+      next();
     },
   },
 }));
 
-// Mock do fs.unlinkSync para evitar operações reais de input e output
 jest.mock("fs", () => ({
-  ...jest.requireActual("fs"), // Mantém outras funções do fs
-  unlinkSync: jest.fn(), // Mocka apenas unlinkSync
+  ...jest.requireActual("fs"),
+  unlinkSync: jest.fn(),
 }));
 
 let server;
@@ -50,7 +52,6 @@ beforeAll(async () => {
 
   server = await setupTestServer();
 
-  // Cria um arquivo temporário
   filePath = path.resolve(__dirname, "temp_image.png");
   fs.writeFileSync(filePath, "conteúdo simulado do arquivo");
 });
@@ -60,10 +61,9 @@ afterAll(async () => {
     fs.unlinkSync(filePath);
   }
 
-  await TemplateModel.deleteMany({ isTest: true });
+  if (server) server.close();
   await mongoose.disconnect();
-  await mongoServer.stop();
-  server.close();
+  if (mongoServer) await mongoServer.stop();
 });
 
 describe("GET /template/", () => {
@@ -103,12 +103,12 @@ describe("GET /template/:id", () => {
   });
 
   it("deve retornar erro 404 se o template não for encontrado", async () => {
-    const invalidId = new mongoose.Types.ObjectId(); // ID inválido
+    const invalidId = new mongoose.Types.ObjectId();
     const response = await request(server).get(`/template/${invalidId}`);
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("Template não encontrado.");
+    expect(response.body.message).toBe("Template não encontrado!");
   });
 });
 
@@ -124,18 +124,19 @@ describe("POST /template", () => {
     expect(response.body.data.imagePath).toBeDefined();
   });
 
-  //   it("deve retornar erro 400 se o campo 'imagePath' estiver ausente", async () => {
-  //     const response = await request(server)
-  //       .post("/template")
-  //       .field("isTest", true);
+  it("deve retornar erro quando nenhuma imagem é enviada", async () => {
+    const response = await request(server)
+      .post("/template")
+      .send({});  // Enviando requisição sem imagem
 
-  //     expect(response.status).toBe(400);
-  //     expect(response.body.success).toBe(false);
-  //     expect(response.body.message).toBe("Nenhuma imagem foi enviada.");
-  //   });
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      success: false,
+      message: "Nenhuma imagem foi enviada."
+    });
+  });
 });
 
-// Testes para DELETE /template/:id
 describe("DELETE /template/:id", () => {
   let templateId;
 
@@ -156,12 +157,12 @@ describe("DELETE /template/:id", () => {
   });
 
   it("deve retornar erro 404 se o template não for encontrado", async () => {
-    const invalidId = new mongoose.Types.ObjectId(); // ID inválido
+    const invalidId = new mongoose.Types.ObjectId();
     const response = await request(server).delete(`/template/${invalidId}`);
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("Template não encontrado.");
+    expect(response.body.message).toBe("Template não encontrado!");
   });
 });
 
@@ -191,13 +192,13 @@ describe("PATCH /template/:id", () => {
   });
 
   it("deve retornar erro 404 se o template não for encontrado", async () => {
-    const invalidId = new mongoose.Types.ObjectId(); // ID inválido
+    const invalidId = new mongoose.Types.ObjectId();
     const response = await request(server)
       .patch(`/template/${invalidId}`)
       .send({ imagePath: "novo/caminho/da/imagem.png" });
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("Template não encontrado.");
+    expect(response.body.message).toBe("Template não encontrado!");
   });
 });
