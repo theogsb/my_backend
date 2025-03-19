@@ -1,14 +1,11 @@
 import request from "supertest";
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import postsRoutes from "../src/routes/postsRoutes.js";
 import { ScheduleModel } from "../src/models/userModel.js";
 import fs from "fs";
 import path from "path";
 import { MongoMemoryServer } from "mongodb-memory-server";
-
-dotenv.config();
 
 // Funcoes utilitárias
 let mongoServer;
