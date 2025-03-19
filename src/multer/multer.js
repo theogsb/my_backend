@@ -7,7 +7,7 @@ const __dirname = path.resolve();
 
 // Diretórios
 const defaultUsersDirectory = path.join(__dirname, "uploads/usersTemplates");
-const testUsersDirectory = path.join(__dirname, "__tests__/temp_uploads");
+const testUsersDirectory = path.join(__dirname, "__tests__/int_tests/temp_uploads");
 
 // Função para garantir que o diretório de teste exista
 const ensureTestDirectoryExists = () => {

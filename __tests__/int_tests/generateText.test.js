@@ -9,10 +9,11 @@ jest.mock("node-fetch", () => ({
 }));
 
 describe("POST /generate-text", () => {
+  let app;
   let server;
 
   beforeAll(() => {
-    const app = express();
+    app = express();
     app.use(express.json());
     app.use(router);
     server = app.listen(0);
@@ -24,19 +25,18 @@ describe("POST /generate-text", () => {
 
   it("deve retornar uma resposta gerada com sucesso", async () => {
     fetch.mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          candidates: [
-            {
-              content: {
-                parts: [{ text: "Resposta mockada da API do Gemini" }],
-              },
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [{ text: "Resposta mockada da API do Gemini" }],
             },
-          ],
-        }),
+          },
+        ],
+      }),
     });
 
-    const response = await request(server)
+    const response = await request(app)
       .post("/generate-text")
       .send({ prompt: "Teste de prompt" });
 
@@ -49,7 +49,7 @@ describe("POST /generate-text", () => {
   it("deve retornar erro 500 se a API do Gemini falhar", async () => {
     fetch.mockRejectedValueOnce(new Error("Erro na API do Gemini"));
 
-    const response = await request(server)
+    const response = await request(app)
       .post("/generate-text")
       .send({ prompt: "Teste de prompt" });
 
@@ -60,7 +60,7 @@ describe("POST /generate-text", () => {
   });
 
   it("deve retornar erro 400 se o prompt estiver ausente", async () => {
-    const response = await request(server).post("/generate-text").send({});
+    const response = await request(app).post("/generate-text").send({});
 
     expect(response.status).toBe(400);
     expect(response.body.success).toBe(false);
