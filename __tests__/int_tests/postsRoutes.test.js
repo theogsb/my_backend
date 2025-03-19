@@ -1,11 +1,13 @@
 import request from "supertest";
 import express from "express";
 import mongoose from "mongoose";
-import postsRoutes from "../src/routes/postsRoutes.js";
-import { ScheduleModel } from "../src/models/userModel.js";
+import postsRoutes from "../../src/routes/postsRoutes.js";
+import { ScheduleModel } from "../../src/models/userModel.js";
 import fs from "fs";
 import path from "path";
 import { MongoMemoryServer } from "mongodb-memory-server";
+
+process.env.NODE_ENV = "test";
 
 let mongoServer;
 
@@ -32,7 +34,6 @@ const closeServerAndDatabase = async (server) => {
   server.close();
 };
 
-// Testes
 describe("Testes das rotas de posts", () => {
   let server;
   let userId;
@@ -49,12 +50,12 @@ describe("Testes das rotas de posts", () => {
     });
     userId = schedule.userId;
 
-    const testUploadsDir = path.resolve(__dirname, "temp_uploads");
+    const testUploadsDir = path.join(__dirname, "temp_uploads");
     if (!fs.existsSync(testUploadsDir)) {
       fs.mkdirSync(testUploadsDir, { recursive: true });
     }
 
-    testFilePath = path.resolve(testUploadsDir, "test-file.png");
+    testFilePath = path.join(testUploadsDir, "test-file.png");
     fs.writeFileSync(testFilePath, "Conteudo do arquivo de teste");
 
     const createResponse = await request(server)
@@ -69,13 +70,9 @@ describe("Testes das rotas de posts", () => {
   });
 
   afterAll(async () => {
-    const testUploadsDir = path.resolve(__dirname, "temp_uploads");
+    const testUploadsDir = path.join(__dirname, "temp_uploads");
     if (fs.existsSync(testUploadsDir)) {
-      fs.readdirSync(testUploadsDir).forEach((file) => {
-        const filePath = path.join(testUploadsDir, file);
-        fs.unlinkSync(filePath);
-      });
-      fs.rmdirSync(testUploadsDir);
+      fs.rmSync(testUploadsDir, { recursive: true, force: true });
     }
 
     await cleanupDatabase();

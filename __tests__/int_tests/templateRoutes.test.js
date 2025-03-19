@@ -1,13 +1,13 @@
 import request from "supertest";
 import express from "express";
-import { TemplateModel } from "../src/models/userModel.js";
+import { TemplateModel } from "../../src/models/userModel.js";
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import fs from "fs";
 import path from "path";
-import templateRoutes from "../src/routes/templateRoutes.js";
+import templateRoutes from "../../src/routes/templateRoutes.js";
 
-jest.mock("../src/multer/multer.js", () => ({
+jest.mock("../../src/multer/multer.js", () => ({
   publicUpload: {
     single: () => (req, res, next) => {
       if (req.headers["content-type"]?.includes("multipart/form-data")) {
@@ -184,7 +184,7 @@ describe("PATCH /template/:id", () => {
   });
 
   it("deve retornar erro 404 se o template não for encontrado", async () => {
-    const invalidId = new mongoose.Types.ObjectId(); // ID inválido
+    const invalidId = new mongoose.Types.ObjectId();
     const response = await request(server)
       .patch(`/template/${invalidId}`)
       .send({ imagePath: "novo/caminho/da/imagem.png" });
