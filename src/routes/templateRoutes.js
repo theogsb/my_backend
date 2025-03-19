@@ -125,9 +125,6 @@ router.delete("/template/:id", async (req, res) => {
 
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
-      console.log("Arquivo excluído com sucesso!", filePath);
-    } else {
-      console.log("Arquivo não encontrado na pasta!", filePath);
     }
 
     await TemplateModel.findByIdAndDelete(req.params.id);
