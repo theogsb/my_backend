@@ -9,8 +9,8 @@ jest.mock("node-fetch", () => ({
 }));
 
 describe("POST /generate-text", () => {
-  let server;
   let app;
+  let server;
 
   beforeAll(() => {
     app = express();
@@ -29,11 +29,7 @@ describe("POST /generate-text", () => {
         candidates: [
           {
             content: {
-              parts: [
-                {
-                  text: "Resposta mockada da API do Gemini",
-                },
-              ],
+              parts: [{ text: "Resposta mockada da API do Gemini" }],
             },
           },
         ],
@@ -42,7 +38,7 @@ describe("POST /generate-text", () => {
 
     const response = await request(app)
       .post("/generate-text")
-      .send({ prompt: "Test prompt" });
+      .send({ prompt: "Teste de prompt" });
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
@@ -68,6 +64,6 @@ describe("POST /generate-text", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("Campo 'prompt' é obrigatório");
+    expect(response.body.message).toBe("O campo 'prompt' é obrigatório.");
   });
 });

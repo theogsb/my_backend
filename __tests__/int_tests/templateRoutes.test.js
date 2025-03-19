@@ -2,7 +2,7 @@ import request from "supertest";
 import express from "express";
 import { TemplateModel } from "../../src/models/userModel.js";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server-core";
+import { MongoMemoryServer } from "mongodb-memory-server";
 import fs from "fs";
 import path from "path";
 import templateRoutes from "../../src/routes/templateRoutes.js";
@@ -19,7 +19,7 @@ jest.mock("../../src/multer/multer.js", () => ({
           destination: "./public/uploads/",
           filename: "test-image.png",
           path: "caminho/simulado/da/imagem.png",
-          size: 1234
+          size: 1234,
         };
       } else {
         req.file = undefined;
@@ -61,9 +61,10 @@ afterAll(async () => {
     fs.unlinkSync(filePath);
   }
 
-  if (server) server.close();
+  await TemplateModel.deleteMany({ isTest: true });
   await mongoose.disconnect();
-  if (mongoServer) await mongoServer.stop();
+  await mongoServer.stop();
+  server.close();
 });
 
 describe("GET /template/", () => {
@@ -108,7 +109,7 @@ describe("GET /template/:id", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("Template não encontrado!");
+    expect(response.body.message).toBe("Template não encontrado.");
   });
 });
 
@@ -125,14 +126,12 @@ describe("POST /template", () => {
   });
 
   it("deve retornar erro quando nenhuma imagem é enviada", async () => {
-    const response = await request(server)
-      .post("/template")
-      .send({});
+    const response = await request(server).post("/template").send({});
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
       success: false,
-      message: "Nenhuma imagem foi enviada."
+      message: "Nenhuma imagem foi enviada.",
     });
   });
 });
@@ -162,7 +161,7 @@ describe("DELETE /template/:id", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("Template não encontrado!");
+    expect(response.body.message).toBe("Template não encontrado.");
   });
 });
 
@@ -199,6 +198,6 @@ describe("PATCH /template/:id", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("Template não encontrado!");
+    expect(response.body.message).toBe("Template não encontrado.");
   });
 });
