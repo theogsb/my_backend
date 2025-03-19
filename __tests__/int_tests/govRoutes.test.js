@@ -2,9 +2,10 @@ import request from "supertest";
 import express from "express";
 import { ScheduleModel } from "../../src/models/userModel.js";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server-core";
+import { MongoMemoryServer } from "mongodb-memory-server";
 import govRoutes from "../../src/routes/govRoutes.js";
 
+// Mock da função fetch
 jest.mock("node-fetch", () => jest.fn());
 import fetch from "node-fetch";
 
@@ -12,19 +13,15 @@ describe("Gov Routes Tests", () => {
   let server;
   let mongoServer;
 
-  const setupTestServer = async () => {
-    const app = express();
-    app.use(express.json());
-    app.use(govRoutes);
-    return app.listen(0);
-  };
-
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await mongoose.connect(uri);
 
-    server = await setupTestServer();
+    const app = express();
+    app.use(express.json());
+    app.use(govRoutes);
+    server = app.listen(0);
   });
 
   afterAll(async () => {
@@ -40,22 +37,18 @@ describe("Gov Routes Tests", () => {
 
   describe("POST /apigov", () => {
     it("deve autenticar usuário com sucesso e criar cronograma", async () => {
-      const mockApiResponse = {
-        ngo: {
-          id: "123456",
-          name: "ONG Teste"
-        }
-      };
-
       fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve(mockApiResponse)
+        json: () =>
+          Promise.resolve({
+            ngo: { id: "123456", name: "ONG Teste" },
+          }),
       });
 
       const response = await request(server)
         .post("/apigov")
         .send({
           cnpj: "12345678901234",
-          password: "senha123"
+          password: "senha123",
         });
 
       expect(response.status).toBe(200);
@@ -70,19 +63,21 @@ describe("Gov Routes Tests", () => {
 
     it("deve retornar erro quando a API externa retorna dados inválidos", async () => {
       fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve({ error: "Invalid credentials" })
+        json: () => Promise.resolve({ error: "Invalid credentials" }),
       });
 
       const response = await request(server)
         .post("/apigov")
         .send({
           cnpj: "12345678901234",
-          password: "senha_errada"
+          password: "senha_errada",
         });
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.message).toBe("Dados inválidos retornados pela API externa");
+      expect(response.body.message).toBe(
+        "Dados inválidos retornados pela API externa"
+      );
     });
 
     it("deve retornar erro quando a API externa está indisponível", async () => {
@@ -92,7 +87,7 @@ describe("Gov Routes Tests", () => {
         .post("/apigov")
         .send({
           cnpj: "12345678901234",
-          password: "senha123"
+          password: "senha123",
         });
 
       expect(response.status).toBe(500);
@@ -103,25 +98,21 @@ describe("Gov Routes Tests", () => {
     it("não deve criar cronograma duplicado se usuário já existe", async () => {
       await ScheduleModel.create({
         userId: "123456",
-        posts: []
+        posts: [],
       });
 
-      const mockApiResponse = {
-        ngo: {
-          id: "123456",
-          name: "ONG Teste"
-        }
-      };
-
       fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve(mockApiResponse)
+        json: () =>
+          Promise.resolve({
+            ngo: { id: "123456", name: "ONG Teste" },
+          }),
       });
 
       const response = await request(server)
         .post("/apigov")
         .send({
           cnpj: "12345678901234",
-          password: "senha123"
+          password: "senha123",
         });
 
       expect(response.status).toBe(200);
@@ -130,4 +121,4 @@ describe("Gov Routes Tests", () => {
       expect(schedules).toHaveLength(1);
     });
   });
-}); 
+});
