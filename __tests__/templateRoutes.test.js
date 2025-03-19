@@ -5,31 +5,26 @@ import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
 import templateRoutes from "../src/routes/templateRoutes.js";
 
-dotenv.config();
-
-// Mock do multer
 jest.mock("../src/multer/multer.js", () => ({
   publicUpload: {
     single: () => (req, res, next) => {
       if (req.headers["content-type"]?.includes("multipart/form-data")) {
         req.file = {
-          path: "caminho/simulado/da/imagem.png", // Caminho simulado
+          path: "caminho/simulado/da/imagem.png",
         };
       } else {
-        req.file = undefined; // Simula a ausência de arquivo
+        req.file = undefined; 
       }
-      next(); // Chama next() para continuar o fluxo da requisição
+      next(); 
     },
   },
 }));
 
-// Mock do fs.unlinkSync para evitar operações reais de input e output
 jest.mock("fs", () => ({
-  ...jest.requireActual("fs"), // Mantém outras funções do fs
-  unlinkSync: jest.fn(), // Mocka apenas unlinkSync
+  ...jest.requireActual("fs"),
+  unlinkSync: jest.fn(),
 }));
 
 let server;
@@ -50,7 +45,6 @@ beforeAll(async () => {
 
   server = await setupTestServer();
 
-  // Cria um arquivo temporário
   filePath = path.resolve(__dirname, "temp_image.png");
   fs.writeFileSync(filePath, "conteúdo simulado do arquivo");
 });
@@ -124,18 +118,17 @@ describe("POST /template", () => {
     expect(response.body.data.imagePath).toBeDefined();
   });
 
-  //   it("deve retornar erro 400 se o campo 'imagePath' estiver ausente", async () => {
-  //     const response = await request(server)
-  //       .post("/template")
-  //       .field("isTest", true);
+  // it("deve retornar erro 400 se o campo 'imagePath' estiver ausente", async () => {
+  //   const response = await request(server)
+  //     .post("/template")
+  //     .field("isTest", true);
 
-  //     expect(response.status).toBe(400);
-  //     expect(response.body.success).toBe(false);
-  //     expect(response.body.message).toBe("Nenhuma imagem foi enviada.");
-  //   });
+  //   expect(response.status).toBe(400);
+  //   expect(response.body.success).toBe(false);
+  //   expect(response.body.message).toBe("Nenhuma imagem foi enviada.");
+  // });
 });
 
-// Testes para DELETE /template/:id
 describe("DELETE /template/:id", () => {
   let templateId;
 
