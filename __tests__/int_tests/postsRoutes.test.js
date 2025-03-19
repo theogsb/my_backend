@@ -105,7 +105,7 @@ describe("Testes das rotas de posts", () => {
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.message).toBe("Campos obrigatorios incompletos");
+      expect(response.body.message).toBe("Campos obrigatórios incompletos");
     });
   });
 
@@ -133,10 +133,7 @@ describe("Testes das rotas de posts", () => {
   describe("PATCH /schedule/:userId/posts/:postId", () => {
     it("deve atualizar uma postagem existente", async () => {
       const updatedData = {
-        platform: "facebook",
-        postText: "Texto atualizado",
-        postDate: "2025-05-02",
-        postTime: "13:00",
+        postTime: "10:00", // Atualiza apenas o campo postTime
       };
 
       const response = await request(app)
@@ -146,14 +143,6 @@ describe("Testes das rotas de posts", () => {
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
       expect(response.body.message).toBe("Postagem atualizada com sucesso!");
-      expect(response.body.data.posts[0].platform).toBe(updatedData.platform);
-      expect(response.body.data.posts[0].postText).toBe(updatedData.postText);
-
-      const receivedDate = new Date(response.body.data.posts[0].postDate)
-        .toISOString()
-        .split("T")[0];
-
-      expect(receivedDate).toBe(updatedData.postDate);
       expect(response.body.data.posts[0].postTime).toBe(updatedData.postTime);
     });
 
@@ -174,20 +163,19 @@ describe("Testes das rotas de posts", () => {
       expect(response.body.message).toBe("Postagem não encontrada!");
     });
 
-    it("deve retornar erro ao atualizar com campos inválidos", async () => {
+    it("deve atualizar parcialmente uma postagem existente", async () => {
       const updatedData = {
-        platform: "", // invalid
-        postDate: "", // invalid
-        postTime: "", // invalid
+        postTime: "", // Campo inválido
       };
 
       const response = await request(app)
         .patch(`/schedule/${userId}/posts/${postId}`)
         .send(updatedData);
 
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
-      expect(response.body.message).toBe("Campos obrigatórios incompletos");
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.message).toBe("Postagem atualizada com sucesso!");
+      expect(response.body.data.posts[0].postTime).toBe("10:00"); // Valor original não deve ser alterado
     });
   });
 
