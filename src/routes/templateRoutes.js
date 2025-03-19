@@ -2,6 +2,7 @@ import express from "express";
 import { TemplateModel } from "../models/userModel.js";
 import { publicUpload } from "../multer/multer.js";
 import fs from "fs";
+import path from "path";
 
 const router = express.Router();
 
@@ -104,7 +105,7 @@ router.patch("/template/:id", publicUpload.single("imagePath"),
 
 router.delete("/template/:id", async (req, res) => {
   try {
-    const template = await TemplateModel.findByIdAndDelete(req.params.id);
+    const template = await TemplateModel.findById(req.params.id);
 
     if (!template) {
       return res.status(404).json({
@@ -113,13 +114,35 @@ router.delete("/template/:id", async (req, res) => {
       });
     }
 
+    if (!template.imagePath) {
+      return res.status(400).json({
+        success: false,
+        message: "Caminho da imagem não encontrado no template.",
+      });
+    }
+
+    const filePath = path.resolve(template.imagePath);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log("Arquivo excluído com sucesso!", filePath);
+    } else {
+      console.log("Arquivo não encontrado na pasta!", filePath);
+    }
+
+    await TemplateModel.findByIdAndDelete(req.params.id);
+
     res.status(200).json({
       success: true,
       message: "Template excluído com sucesso!",
       data: template,
     });
   } catch (error) {
-    handleError(res, error);
+    console.error("Erro ao excluir template:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro interno ao excluir template.",
+    });
   }
 });
 

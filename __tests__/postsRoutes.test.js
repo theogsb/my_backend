@@ -7,14 +7,13 @@ import fs from "fs";
 import path from "path";
 import { MongoMemoryServer } from "mongodb-memory-server";
 
-// Funcoes utilitárias
 let mongoServer;
 
 const setupTestServer = async () => {
   const app = express();
   app.use(express.json());
   app.use(postsRoutes);
-  return app.listen(0); // Porta dinamica
+  return app.listen(0);
 };
 
 const connectToDatabase = async () => {
@@ -44,24 +43,20 @@ describe("Testes das rotas de posts", () => {
     await connectToDatabase();
     server = await setupTestServer();
 
-    // Criar um cronograma para o usuário de teste
     const schedule = await ScheduleModel.create({
       userId: "testUserId",
       posts: [],
     });
     userId = schedule.userId;
 
-    // Criar uma pasta temporária para uploads
     const testUploadsDir = path.resolve(__dirname, "temp_uploads");
     if (!fs.existsSync(testUploadsDir)) {
       fs.mkdirSync(testUploadsDir, { recursive: true });
     }
 
-    // Criar um arquivo temporário para o teste
     testFilePath = path.resolve(testUploadsDir, "test-file.png");
     fs.writeFileSync(testFilePath, "Conteudo do arquivo de teste");
 
-    // Criar uma postagem para o teste
     const createResponse = await request(server)
       .post(`/schedule/${userId}/posts`)
       .field("platform", "instagram")
@@ -74,7 +69,6 @@ describe("Testes das rotas de posts", () => {
   });
 
   afterAll(async () => {
-    // Limpar arquivos temporários
     const testUploadsDir = path.resolve(__dirname, "temp_uploads");
     if (fs.existsSync(testUploadsDir)) {
       fs.readdirSync(testUploadsDir).forEach((file) => {
@@ -212,7 +206,6 @@ describe("Testes das rotas de posts", () => {
       expect(response.body.message).toBe("Postagem excluída com sucesso!");
       expect(response.body.data).toBeDefined();
 
-      // Verificar se a postagem foi realmente removida
       const schedule = await ScheduleModel.findOne({ userId });
       const post = schedule.posts.id(postId);
       expect(post).toBeNull();
