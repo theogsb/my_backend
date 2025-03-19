@@ -28,7 +28,7 @@ export class TemplateService {
 
       return template;
     } catch (error) {
-      if (error.message === "Template não encontrado!") {
+      if (error.message === "Template não encontrado.") {
         throw error;
       }
       throw new Error("Erro ao buscar template");
@@ -100,7 +100,7 @@ export class TemplateService {
 
       await template.deleteOne();
     } catch (error) {
-      if (error.message === "Template não encontrado!") {
+      if (error.message === "Template não encontrado.") {
         throw error;
       }
       throw new Error("Erro ao deletar template");

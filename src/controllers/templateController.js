@@ -25,7 +25,7 @@ export class TemplateController {
       if (!template) {
         return res.status(404).json({
           success: false,
-          message: "Template não encontrado!"
+          message: "Template não encontrado."
         });
       }
 
@@ -86,7 +86,7 @@ export class TemplateController {
       if (!template) {
         return res.status(404).json({
           success: false,
-          message: "Template não encontrado!"
+          message: "Template não encontrado."
         });
       }
 
@@ -110,7 +110,7 @@ export class TemplateController {
       if (!template) {
         return res.status(404).json({
           success: false,
-          message: "Template não encontrado!"
+          message: "Template não encontrado."
         });
       }
 

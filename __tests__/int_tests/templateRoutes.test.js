@@ -108,7 +108,7 @@ describe("GET /template/:id", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("Template não encontrado!");
+    expect(response.body.message).toBe("Template não encontrado.");
   });
 });
 
@@ -199,6 +199,6 @@ describe("PATCH /template/:id", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("Template não encontrado!");
+    expect(response.body.message).toBe("Template não encontrado.");
   });
 });
