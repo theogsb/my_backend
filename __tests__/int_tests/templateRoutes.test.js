@@ -12,12 +12,19 @@ jest.mock("../../src/multer/multer.js", () => ({
     single: () => (req, res, next) => {
       if (req.headers["content-type"]?.includes("multipart/form-data")) {
         req.file = {
+          fieldname: "imagePath",
+          originalname: "test-image.png",
+          encoding: "7bit",
+          mimetype: "image/png",
+          destination: "./public/uploads/",
+          filename: "test-image.png",
           path: "caminho/simulado/da/imagem.png",
+          size: 1234,
         };
       } else {
-        req.file = undefined; 
+        req.file = undefined;
       }
-      next(); 
+      next();
     },
   },
 }));
@@ -97,7 +104,7 @@ describe("GET /template/:id", () => {
   });
 
   it("deve retornar erro 404 se o template não for encontrado", async () => {
-    const invalidId = new mongoose.Types.ObjectId(); // ID inválido
+    const invalidId = new mongoose.Types.ObjectId();
     const response = await request(server).get(`/template/${invalidId}`);
 
     expect(response.status).toBe(404);
@@ -118,15 +125,15 @@ describe("POST /template", () => {
     expect(response.body.data.imagePath).toBeDefined();
   });
 
-  // it("deve retornar erro 400 se o campo 'imagePath' estiver ausente", async () => {
-  //   const response = await request(server)
-  //     .post("/template")
-  //     .field("isTest", true);
+  it("deve retornar erro quando nenhuma imagem é enviada", async () => {
+    const response = await request(server).post("/template").send({});
 
-  //   expect(response.status).toBe(400);
-  //   expect(response.body.success).toBe(false);
-  //   expect(response.body.message).toBe("Nenhuma imagem foi enviada.");
-  // });
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      success: false,
+      message: "Nenhuma imagem foi enviada.",
+    });
+  });
 });
 
 describe("DELETE /template/:id", () => {
@@ -149,7 +156,7 @@ describe("DELETE /template/:id", () => {
   });
 
   it("deve retornar erro 404 se o template não for encontrado", async () => {
-    const invalidId = new mongoose.Types.ObjectId(); // ID inválido
+    const invalidId = new mongoose.Types.ObjectId();
     const response = await request(server).delete(`/template/${invalidId}`);
 
     expect(response.status).toBe(404);
