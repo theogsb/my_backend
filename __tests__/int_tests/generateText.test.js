@@ -64,6 +64,6 @@ describe("POST /generate-text", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.success).toBe(false);
-    expect(response.body.message).toBe("O campo 'prompt' é obrigatório.");
+    expect(response.body.message).toBe("Campo 'prompt' é obrigatório.");
   });
 });

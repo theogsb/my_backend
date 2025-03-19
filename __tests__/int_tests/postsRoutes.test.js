@@ -10,13 +10,13 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 process.env.NODE_ENV = "test";
 
 let mongoServer;
-let server;
+let app;
 
-const setupTestServer = async () => {
-  const app = express();
+const setupTestServer = () => {
+  app = express();
   app.use(express.json());
   app.use(postsRoutes);
-  return app.listen(0);
+  return app;
 };
 
 const connectToDatabase = async () => {
@@ -29,10 +29,9 @@ const cleanupDatabase = async () => {
   await ScheduleModel.deleteMany({});
 };
 
-const closeServerAndDatabase = async () => {
+const closeDatabase = async () => {
   await mongoose.disconnect();
   await mongoServer.stop();
-  server.close();
 };
 
 describe("Testes das rotas de posts", () => {
@@ -42,7 +41,7 @@ describe("Testes das rotas de posts", () => {
 
   beforeAll(async () => {
     await connectToDatabase();
-    server = await setupTestServer();
+    app = setupTestServer();
 
     const schedule = await ScheduleModel.create({
       userId: "testUserId",
@@ -58,7 +57,7 @@ describe("Testes das rotas de posts", () => {
     testFilePath = path.join(testUploadsDir, "test-file.png");
     fs.writeFileSync(testFilePath, "Conteudo do arquivo de teste");
 
-    const createResponse = await request(server)
+    const createResponse = await request(app)
       .post(`/schedule/${userId}/posts`)
       .field("platform", "instagram")
       .field("postText", "Test post text")
@@ -76,12 +75,12 @@ describe("Testes das rotas de posts", () => {
     }
 
     await cleanupDatabase();
-    await closeServerAndDatabase();
+    await closeDatabase();
   });
 
   describe("POST /schedule/:userId/posts", () => {
     it("deve criar uma nova postagem", async () => {
-      const response = await request(server)
+      const response = await request(app)
         .post(`/schedule/${userId}/posts`)
         .field("platform", "instagram")
         .field("postText", "Test post text")
@@ -97,22 +96,22 @@ describe("Testes das rotas de posts", () => {
     });
 
     it("deve retornar erro ao criar postagem sem dados obrigatórios", async () => {
-      const response = await request(server)
+      const response = await request(app)
         .post(`/schedule/${userId}/posts`)
-        .field("platform", "")
-        .field("postDate", "")
-        .field("postTime", "")
+        .field("platform", "") // faltando
+        .field("postDate", "") // faltando
+        .field("postTime", "") // faltando
         .attach("imagePath", testFilePath);
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
-      expect(response.body.message).toBe("Campos obrigatórios incompletos");
+      expect(response.body.message).toBe("Campos obrigatorios incompletos");
     });
   });
 
   describe("GET /schedule/:userId/posts/:postId", () => {
     it("deve retornar uma postagem específica", async () => {
-      const response = await request(server).get(
+      const response = await request(app).get(
         `/schedule/${userId}/posts/${postId}`
       );
 
@@ -122,7 +121,7 @@ describe("Testes das rotas de posts", () => {
     });
 
     it("deve retornar erro ao buscar postagem inexistente", async () => {
-      const response = await request(server).get(
+      const response = await request(app).get(
         `/schedule/${userId}/posts/invalidPostId`
       );
 
@@ -140,7 +139,7 @@ describe("Testes das rotas de posts", () => {
         postTime: "13:00",
       };
 
-      const response = await request(server)
+      const response = await request(app)
         .patch(`/schedule/${userId}/posts/${postId}`)
         .send(updatedData);
 
@@ -166,7 +165,7 @@ describe("Testes das rotas de posts", () => {
         postTime: "11:00",
       };
 
-      const response = await request(server)
+      const response = await request(app)
         .patch(`/schedule/${userId}/posts/invalidPostId`)
         .send(updatedData);
 
@@ -177,12 +176,12 @@ describe("Testes das rotas de posts", () => {
 
     it("deve retornar erro ao atualizar com campos inválidos", async () => {
       const updatedData = {
-        platform: "",
-        postDate: "",
-        postTime: "",
+        platform: "", // invalid
+        postDate: "", // invalid
+        postTime: "", // invalid
       };
 
-      const response = await request(server)
+      const response = await request(app)
         .patch(`/schedule/${userId}/posts/${postId}`)
         .send(updatedData);
 
@@ -194,7 +193,7 @@ describe("Testes das rotas de posts", () => {
 
   describe("DELETE /schedule/:userId/posts/:postId", () => {
     it("deve excluir uma postagem existente", async () => {
-      const response = await request(server).delete(
+      const response = await request(app).delete(
         `/schedule/${userId}/posts/${postId}`
       );
 
@@ -209,7 +208,7 @@ describe("Testes das rotas de posts", () => {
     });
 
     it("deve retornar erro ao tentar excluir uma postagem inexistente", async () => {
-      const response = await request(server).delete(
+      const response = await request(app).delete(
         `/schedule/${userId}/posts/invalidPostId`
       );
 
@@ -219,7 +218,7 @@ describe("Testes das rotas de posts", () => {
     });
 
     it("deve retornar erro ao tentar excluir uma postagem de um usuário inexistente", async () => {
-      const response = await request(server).delete(
+      const response = await request(app).delete(
         `/schedule/invalidUserId/posts/${postId}`
       );
 
