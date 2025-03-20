@@ -15,14 +15,14 @@ export class TextGeneratorController {
           message: "Campo 'prompt' é obrigatório",
         });
       }
-
+        
       const result = await this.service.generateText(prompt);
       res.status(200).json(result);
+
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Erro interno no servidor.",
-        error: error.message,
+        message: error.message
       });
     }
   }

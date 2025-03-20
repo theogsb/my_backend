@@ -8,11 +8,6 @@ const templateSchema = new mongoose.Schema({
 });
 
 const scheduleSchema = new mongoose.Schema({
-  userId: {
-    type: String,
-    required: true,
-  },
-
   posts: [
     {
       platform: {
@@ -38,6 +33,7 @@ const scheduleSchema = new mongoose.Schema({
     },
   ],
 });
+
 
 const ScheduleModel = mongoose.model("Schedule", scheduleSchema);
 const TemplateModel = mongoose.model("Template", templateSchema);
