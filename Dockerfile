@@ -1,10 +1,8 @@
-# Imagem base que vou usar, versão 22
-FROM node:22
+FROM node:22-alpine
 
-# O diretório que vamos usar
 WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json package-lock.json  ./
 
 RUN npm install
 
