@@ -1,13 +1,10 @@
 services:
   backend:
-    image: maqvn/visibilidade_backend:1.0
+    image: maqvn/backend_visibilidade:1.0
     ports:
       - '3000:3000'
     env_file:
       - .env
-
-  database:
-    image: mongo:latest
 
 volumes:
   mongodb_data:
