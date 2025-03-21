@@ -1,19 +1,19 @@
-import { PostService } from '../services/postService.js';
+import { ScheduleService } from '../services/scheduleService.js';
 import fs from 'fs';
 
 const handleError = (res, error) => {
-  const statusCode = error.statusCode || 500;
-  res.status(statusCode).json({
+  res.status(500).json({
     success: false,
-    message: error.message || "Erro interno no servidor.",
-    error: error.message,
+    message: error.message
   });
 };
 
-export class PostController {
+export class ScheduleController {
+  
   constructor() {
-    this.service = new PostService();
+    this.service = new ScheduleService();
   }
+
 
   async getSchedule(req, res) {
     try {
@@ -22,7 +22,7 @@ export class PostController {
 
       return res.status(200).json({
         success: true,
-        message: "Cronograma encontrado com sucesso!",
+        message: "Cronograma enviado com sucesso!",
         data: schedule,
       });
     } catch (error) {
@@ -37,13 +37,14 @@ export class PostController {
 
       return res.status(200).json({
         success: true,
-        message: "Postagem encontrada com sucesso!",
+        message: "Postagem enviado com sucesso!",
         data: post,
       });
     } catch (error) {
       handleError(res, error);
     }
   }
+
 
   async createPost(req, res) {
     try {
@@ -52,11 +53,11 @@ export class PostController {
       const file = req.file;
 
       if (!postData.platform || !postData.postDate || !postData.postTime) {
-        throw { statusCode: 400, message: "Campos obrigatórios incompletos" };
+        throw new Error("Campos obrigatórios incompletos");
       }
 
       if (!file) {
-        throw { statusCode: 400, message: "Nenhuma imagem foi enviada." };
+        throw new Error("Nenhuma imagem foi enviada.");
       }
 
       const schedule = await this.service.createPost(userId, { ...postData, imagePath: file.path });
@@ -66,6 +67,7 @@ export class PostController {
         message: "Postagem criada com sucesso!",
         data: schedule,
       });
+      
     } catch (error) {
       if (req.file) {
         fs.unlinkSync(req.file.path);
@@ -73,6 +75,7 @@ export class PostController {
       handleError(res, error);
     }
   }
+
 
   async updatePost(req, res) {
     try {
@@ -87,6 +90,7 @@ export class PostController {
         message: "Postagem atualizada com sucesso!",
         data: schedule,
       });
+
     } catch (error) {
       if (req.file) {
         fs.unlinkSync(req.file.path);
@@ -95,6 +99,7 @@ export class PostController {
     }
   }
 
+  
   async deletePost(req, res) {
     try {
       const { userId, postId } = req.params;
@@ -103,7 +108,6 @@ export class PostController {
       return res.status(200).json({
         success: true,
         message: "Postagem excluída com sucesso!",
-        data: schedule,
       });
     } catch (error) {
       handleError(res, error);

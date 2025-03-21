@@ -1,24 +1,19 @@
-import { TemplateModel } from '../models/userModel.js';
+import { TemplateModel } from '../models/models.js';
 import fs from 'fs';
 
 export class TemplateService {
-  validateTemplateData = (templateData) => {
-    const { imagePath } = templateData;
-    if (!imagePath) {
-      throw new Error("Imagem é obrigatória");
-    }
-  };
-
-  getTemplates = async () => {
+  
+  async getTemplates(){
     try {
       const templates = await TemplateModel.find();
       return templates;
+
     } catch (error) {
-      throw new Error("Erro ao buscar templates");
+      throw new Error(error.message);
     }
   };
 
-  getTemplate = async (templateId) => {
+  async getTemplate(templateId){
     try {
       const template = await TemplateModel.findById(templateId);
       
@@ -27,33 +22,28 @@ export class TemplateService {
       }
 
       return template;
+
     } catch (error) {
-      if (error.message === "Template não encontrado.") {
-        throw error;
-      }
-      throw new Error("Erro ao buscar template");
+        throw new Error(error.message);
     }
   };
 
-  createTemplate = async (templateData) => {
-    try {
-      this.validateTemplateData(templateData);
 
+  async createTemplate(templatePath){
+    try {
       const template = new TemplateModel({
-        imagePath: templateData.imagePath
+        imagePath: templatePath
       });
       await template.save();
 
       return template;
+
     } catch (error) {
-      if (error.message === "Imagem é obrigatória") {
-        throw error;
-      }
-      throw new Error("Erro ao criar template");
+        throw new Error(error.message);
     }
   };
 
-  updateTemplate = async (templateId, updateData) => {
+  updateTemplate = async (templateId, UpdateTemplatePath) => {
     try {
       const template = await TemplateModel.findById(templateId);
       if (!template) {
@@ -63,20 +53,18 @@ export class TemplateService {
       if (template.imagePath) {
         try {
           fs.unlinkSync(template.imagePath);
-        } catch (error) {
-          console.log("Arquivo de imagem não encontrado:", template.imagePath);
+        }catch (error) {
+          console.log('Arquivo de imagem não encontrado!');
         }
       }
 
-      template.imagePath = updateData.imagePath;
+      template.imagePath = UpdateTemplatePath;
       await template.save();
 
       return template;
+
     } catch (error) {
-      if (error.message === "Template não encontrado.") {
-        throw error;
-      }
-      throw new Error("Erro ao atualizar template");
+        throw new Error(error.message);
     }
   };
 
@@ -90,20 +78,16 @@ export class TemplateService {
 
       if (template.imagePath) {
         try {
-          if (fs.existsSync(template.imagePath)) {
             fs.unlinkSync(template.imagePath);
-          }
         } catch (error) {
-          console.error('Erro ao deletar arquivo de imagem:', error);
+          console.log('Arquivo de imagem não encontrado');
         }
       }
 
       await template.deleteOne();
+    
     } catch (error) {
-      if (error.message === "Template não encontrado.") {
-        throw error;
-      }
-      throw new Error("Erro ao deletar template");
+      throw new Error(error.message);
     }
   };
 } 

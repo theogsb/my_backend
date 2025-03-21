@@ -1,7 +1,7 @@
 import express from "express";
 
-import govRoutes from "../routes/govRoutes.js";
-import postsRoutes from '../routes/postsRoutes.js';
+import govRoutes from "../routes/userRoutes.js";
+import postsRoutes from '../routes/scheduleRoutes.js';
 import templateRoutes from "../routes/templateRoutes.js";
 import textGeneratorRoutes from "../routes/textGeneratorRoutes.js";
 
