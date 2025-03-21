@@ -1,4 +1,4 @@
-import { PostService } from '../services/postService.js';
+import { ScheduleService } from '../services/scheduleService.js';
 import fs from 'fs';
 
 const handleError = (res, error) => {
@@ -8,10 +8,10 @@ const handleError = (res, error) => {
   });
 };
 
-export class PostController {
+export class ScheduleController {
   
   constructor() {
-    this.service = new PostService();
+    this.service = new ScheduleService();
   }
 
 
@@ -108,7 +108,6 @@ export class PostController {
       return res.status(200).json({
         success: true,
         message: "Postagem excluída com sucesso!",
-        data: schedule,
       });
     } catch (error) {
       handleError(res, error);

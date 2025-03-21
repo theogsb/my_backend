@@ -30,12 +30,7 @@ export class TextGeneratorService {
       });
   
       const data = await response.json();
-      
-      return {
-        success: true,
-        message: "Resposta gerada com sucesso!",
-        text: data.candidates[0].content.parts[0].text,
-      };
+      return data.candidates[0].content.parts[0].text;
       
     } catch( error ) {
       throw new Error(error.message);

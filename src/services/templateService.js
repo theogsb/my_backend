@@ -1,4 +1,4 @@
-import { TemplateModel } from '../models/userModel.js';
+import { TemplateModel } from '../models/models.js';
 import fs from 'fs';
 
 export class TemplateService {

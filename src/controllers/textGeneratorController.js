@@ -16,9 +16,13 @@ export class TextGeneratorController {
         });
       }
         
-      const result = await this.service.generateText(prompt);
-      res.status(200).json(result);
+      const result = await this.service.generateText(prompt); 
 
+      res.status(200).json({
+        success: true,
+        message: "Resposta gerada com sucesso!",
+        data: result
+      });
     } catch (error) {
       res.status(500).json({
         success: false,

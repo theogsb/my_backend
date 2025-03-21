@@ -1,7 +1,7 @@
-import { ScheduleModel } from '../models/userModel.js';
+import { ScheduleModel } from '../models/models.js';
 import fs from 'fs';
 
-export class PostService {
+export class ScheduleService {
   
   async getSchedule(userId) {
     try {
